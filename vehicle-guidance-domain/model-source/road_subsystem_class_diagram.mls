@@ -1,10 +1,10 @@
 diagram class
-notation Starr
+notation xUML
 presentation default
 orientation landscape
 color peach
 sheet E
-padding l500 b400
+padding l500 b200
 frame Model Integration Diagram
 frame_presentation default
 nodes

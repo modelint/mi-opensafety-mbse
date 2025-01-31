@@ -131,11 +131,11 @@ attributes
 --
 class Lane Arrangement
 attributes
-    Inside division : Lane Division ID {I, I3*, R40}
+    Inside division : Lane Division ID {I, *I3, R40}
     Outside division : Lane Division ID {I2, R40}
-    LCS : Lane Configuration Segment ID {I, I2, I3*, R40}
-    Conduit : Conduit Role {I3*, R40}
-    Road segment : Road Segment ID {I, I2, I3*, R40}
+    LCS : Lane Configuration Segment ID {I, I2, *I3, R40}
+    Conduit : Conduit Role {*I3, R40}
+    Road segment : Road Segment ID {I, I2, *I3, R40}
 --
 class Lane Configuration Segment <import:Lane Reconfiguration Subsystem>
 attributes
@@ -170,7 +170,7 @@ attributes
 --
 class Non Driving Lane
 attributes
-    Inside division : Lane Division ID {I ,R10}
+    Inside division : Lane Division ID {I, R10}
     Outside division : Lane Division ID {I, R10}
     Road segment : Road Segment ID {I, R10}
 --
@@ -297,7 +297,7 @@ attributes
     Inside division : Lane Division ID {I, I2, R19}
     Outside division : Lane Division ID {I, I2, R19}
     Road segment : Road Segment ID {I, I2, R19, R9}
-    Conduit : Conduit Role {I2*, R9}
+    Conduit : Conduit Role {*I2, R9}
 --
 class Unpaired Conduit
 attributes
@@ -504,7 +504,7 @@ relationships
     Hard Division Transition.Barrier -> Barrier Type.Name
 --
     OR34
-    outermost / innermost
+    outermost / innermost, Driving Lane Order
     Number : I
 --
     R36
@@ -513,7 +513,7 @@ relationships
     Division Transition.(Division, Road segment) -> Lane Division.(ID, Road segment)
 --
     OR37
-    innermost / outermost
+    innermost / outermost, Lane Division
     Position : I2
 --
     R38
@@ -531,8 +531,7 @@ relationships
     arranges, M Unidirectional Lane
     1 Lane Arrangement
     Lane Arrangement.(LCS, Road segment) -> Lane Configuration Segment.(ID, Road segment)
-    Lane Arrangement.(Inside division, Outside division, Conduit, Road segment) ->
-    Unidirectional Lane.(Inside division, Outside division, Conduit, Road segment)
+    Lane Arrangement.(Inside division, Outside division, Conduit, Road segment) -> Unidirectional Lane.(Inside division, Outside division, Conduit, Road segment)
 --
     R41
     marks, 1c Road Edge
@@ -540,7 +539,7 @@ relationships
     Road Edge.(Lane division, Road segment) -> Lane Division.(ID, Road segment)
 --
     OR42
-    closest / furthest
+    closest / furthest, Division Transition
     Location : I2
 --
     R43
