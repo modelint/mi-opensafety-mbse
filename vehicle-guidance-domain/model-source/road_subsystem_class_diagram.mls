@@ -1,4 +1,3 @@
-// Road Class Diagram
 diagram class
 notation Starr
 presentation default
@@ -6,7 +5,7 @@ orientation landscape
 color peach
 sheet E
 padding l500 b400
-frame TRI MBSE
+frame Model Integration Diagram
 frame_presentation default
 nodes
     Road Map Specification 4,1
