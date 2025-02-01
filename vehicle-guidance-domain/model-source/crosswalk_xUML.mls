@@ -1,0 +1,44 @@
+diagram class
+notation xUML
+presentation default
+orientation landscape
+color butter
+sheet A1
+padding l130 b300 t10 r10
+frame Model Integration Diagram
+frame_presentation default
+nodes
+    Approached Walk Signal/2 7,1
+    Crosswalk 9,7
+    Crosswalk Access 5,7
+    Crosswalk Approach 6,3
+    Crosswalk Lane Traversal 8,8-9
+    Driving Lane 9,10
+    Ego Vehicle 4,4
+    Roadside Crosswalk Access/2 3,6
+    Interface Crosswalk Span/2 12,4
+    Intersection Crosswalk 10-11,6
+    Intersection Interface 13,6
+    Island 1,7
+    Island Crosswalk Access/2 3,7
+    Median 1,8
+    Median Crosswalk Access/2 3,8
+    Mid Block Crosswalk 10-11,8
+    Road Edge 1,6
+    Signal Controlled Crosswalk 10,4
+    Walk Duration 5,1
+    Walk Signal Span 9,2
+connectors
+    +R70 : +/1 r|Crosswalk : +/1 l*|Driving Lane, t|Crosswalk Lane Traversal
+    -R71.2 : -/1 t-2|Crosswalk Access : +/1 t+2|Crosswalk Access, b|Crosswalk : L6
+    -R72 : t|Crosswalk { b|Intersection Crosswalk, b|Mid Block Crosswalk }
+    +R73 : b|Crosswalk Access { t|Roadside Crosswalk Access, t|Island Crosswalk Access, t|Median Crosswalk Access }
+    +R74 : +/1 t*|Road Edge : +/1 b|Roadside Crosswalk Access
+    +R75 :  +/1 b+1|Island Crosswalk Access : +/1 t*|Island
+    +R75 : +/1 t*|Island : +/1 b|Island Crosswalk Access
+    +R76 : +/1 t*|Median : +/1 b|Median Crosswalk Access
+    +R77.2 : +/1 l-2|Crosswalk : +/2 t|Ego Vehicle, r|Crosswalk Approach
+    -R78 : +/2 r*|Walk Signal Span : +/2 l+1|Crosswalk, b|Signal Controlled Crosswalk
+    +R79 : +/1 b|Walk Signal Span : +/1 l|Ego Vehicle, r|Approached Walk Signal
+    -R80 : +/1 b*|Intersection Interface : +/1 t|Intersection Crosswalk, r|Interface Crosswalk Span
+    -R81 : +/1 b|Approached Walk Signal : +/1 t*|Walk Duration

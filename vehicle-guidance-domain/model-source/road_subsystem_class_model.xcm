@@ -9,7 +9,7 @@ metadata
     Copyright notice > MIT
     Organization logo > mint
 domain Vehical Guidance, VG
-subsystem Road, R 1-99
+subsystem Road, R 1-49
 class Barrier Type
 attributes
     Name : Barrier Name {I}

@@ -3,8 +3,8 @@ notation Starr
 presentation default
 orientation landscape
 color peach
-sheet E
-padding l500 b200
+sheet A0
+padding l200 b100
 frame Model Integration Diagram
 frame_presentation default
 nodes
