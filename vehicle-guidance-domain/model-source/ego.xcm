@@ -12,12 +12,12 @@ domain Vehical Guidance, VG
 subsystem Ego Vehicle, EGO 150-199
 class Active Driving Lane, ADL
 attributes
-    Ego : Ego ID {I, R151}
-    Current lane inside division : Lane Division ID {I2, R151}
-    Current lane outside division : Lane Division ID {I2, R151}
-    Road segment : Road Segment ID {I2, R151}
-    ///Inner division traversable : Boolean
-    ///Outer division traversable : Boolean
+///    Ego : Ego ID {I, R151}
+///    Current lane inside division : Lane Division ID {I2, R151}
+///    Current lane outside division : Lane Division ID {I2, R151}
+///    Road segment : Road Segment ID {I2, R151}
+    /Inner division traversable : Boolean = false
+    /Outer division traversable : Boolean
 --
 class Angular Intersection Lane Connector <import:Intersection>
 attributes
@@ -34,7 +34,7 @@ attributes
     XL inside division : Lane Division ID {R163}
     Exit conduit : Conduit Role {R163}
     Intersection : Intersection ID {R163}
-    Blocked : Boolean// = False
+    Blocked : Boolean = false
 --
 class Cross Traffic Lane, CTL
 attributes
@@ -63,11 +63,11 @@ attributes
     Target lane inside division : Lane Division ID {I2, R152c}
     Target lane outside division : Lane Division ID {I2, R152c}
     Road segment : Road Segment ID {I2, R152}
-    Target lane open : Boolean// = false
-    Traverse ok : Boolean// = false
-    Premature crossing : Boolean// = false
-    Lingering crossing : Boolean// = false
-    Max lane change time exceeded// : Boolean = false
+    Target lane open : Boolean = false
+    Traverse ok : Boolean = false
+    Premature crossing : Boolean = false
+    Lingering crossing : Boolean = false
+    Max lane change time exceeded : Boolean = false
 --
 ///methods
 ///    Start monitoring target lane()
@@ -134,8 +134,8 @@ attributes
     Road segment : Road Segment ID {I2, R157c}
     Direction : Inner Outer
     Completion turn signal : Turn Indicate
-    ///Turn direction : Left Right
-    Abort requested : Boolean// = false
+    /Turn direction : Left Right
+    Abort requested : Boolean = false
 --
 class Non Traveling Ego Vehicle, EVNT
 attributes
