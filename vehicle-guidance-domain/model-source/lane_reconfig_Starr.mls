@@ -1,0 +1,73 @@
+diagram class
+notation Starr
+presentation default
+orientation landscape
+color autumn
+sheet A0
+padding l400 b400
+frame Model Integration Diagram
+frame_presentation default
+nodes
+    Dead End 4,2
+    Loop End 3,2
+    Intersection Interface 2,2
+    Longitudinal Reconfiguration/2 3-4,3-4
+    Lane Configuration Segment/2 1,5-6
+    Conduit 2,4
+    Driving Lane Reconfiguration/2 2,7 : 13,5
+    Fork Lane 9,1-2
+    Intersection Exit Reconfiguration Role/2 9,3 >top
+    Split Exit Lane 9,4 >top
+    Convergence Exit Lane 9,5-6 >top
+    Driving Lane Initiation 10-11,5
+    Intersection Exit Lane 7,3
+    Split Lane Division Pair 7-8,4-5
+    Internal Reconfiguration 3-4,8
+    Convergence 6,5-6
+    Reconfiguration Role 12,6-7
+    Merge Lane 9,8 >top
+    Driving Lane 13,8
+    Convergence Entrance Lane/2 9,9 >top
+    Split Entrance Lane 9,10-11 >top
+    Driving Lane Termination 10-11,9-10
+    Mid Road Turn Lane 9,12 >top
+    Intersection Entrance Reconfiguration Role/2 9,13 >top
+    Convergence Lane Zipper Pair/2 7-8,9-10
+    Split 6,11 >left
+    Lateral Reconfiguration/2 3-4,12
+    Intersection Entrance Lane/2 7,13
+    Driving Lane Event 13,10-11
+    Usage Policy Event 14,12
+    Traversal Policy Event 13,12
+    Surface Change Event 12,12
+    Obstacle Event 11,12
+    Lane Usage Specification/2 14,14-15
+    Surface Driving Specification/2 12,14-15
+    Obstacle Mitigation Specification/2 11,14-15
+connectors
+    +R200 : +/1 b|Intersection Exit Reconfiguration Role : -/1 t*|Intersection Exit Lane
+    -R201 : +/1 b|Intersection Entrance Reconfiguration Role : +/1 t*|Intersection Entrance Lane
+    +R202.2 : -/1 r|Lane Configuration Segment : +/1 b|Driving Lane Reconfiguration
+    +R203.2 : -/2 l|Lane Configuration Segment : +/2 b|Conduit
+    +R204 : b|Reconfiguration Role { t|Driving Lane Initiation, t|Driving Lane Termination }
+    +R205 : b|Driving Lane Termination { t+1|Merge Lane, t|Convergence Entrance Lane, t|Intersection Entrance Reconfiguration Role, t|Split Entrance Lane, t|Mid Road Turn Lane }
+    +R206 : +/2 r|Conduit : +/2 l*|Driving Lane Reconfiguration
+    +R207 : +/2 r|Driving Lane Reconfiguration.2 : +/2 l*|Driving Lane, t|Reconfiguration Role
+    +R208.2 : +/2 t-2|Fork Lane : -/1 t|Driving Lane : L14R-1
+    +R209+1 : +/2 b|Driving Lane : -/2 t*|Merge Lane
+    +R210.2 : -/3 b|Convergence Entrance Lane : +/3 r|Convergence Entrance Lane, t|Convergence Lane Zipper Pair : L8R+2 L10R-2
+    -R211 : t|Internal Reconfiguration { b|Fork Lane, b|Convergence, b|Split : L5R+1 }
+    -R212 : t|Driving Lane Reconfiguration { b|Longitudinal Reconfiguration, b|Internal Reconfiguration, b|Lateral Reconfiguration }
+    +R213 : +/1 b+2|Split Entrance Lane : +/1 t*|Split
+    -R214 : +/1 r|Usage Policy Event : +/1 l*|Lane Usage Specification
+    -R215 : +/4 r|Driving Lane : +/3 l*|Driving Lane Event
+    -R216-1 : l|Longitudinal Reconfiguration { r|Dead End, r|Loop End, r|Intersection Interface }
+    +R217 : b|Driving Lane Initiation { t|Fork Lane, t|Fork Lane, t|Intersection Exit Reconfiguration Role, t|Split Exit Lane, t|Convergence Exit Lane }
+    +R218.2 : -/3 b|Split Exit Lane : +/3 r|Split Exit Lane, t|Split Lane Division Pair : L8R+2 L5R-2
+    +R219 : -/1 b|Convergence Exit Lane : +/1 t*|Convergence
+    +R220 : +/2 b-1|Split Entrance Lane : -/2 b|Split Lane Division Pair : L7R-2
+    +R221 : +/2 b|Mid Road Turn Lane : +/2 t*|Lateral Reconfiguration
+    +R222-1 : r|Driving Lane Event { l|Usage Policy Event, l|Traversal Policy Event, l|Surface Change Event, l|Obstacle Event }
+    -R223 : +/1 r|Surface Change Event : +/3 l*|Surface Driving Specification
+    -R224 : +/1 r|Obstacle Event : +/3 l*|Obstacle Mitigation Specification
+    -R225.2 : +/1 l|Convergence Lane Zipper Pair : +/1 b+2|Convergence Exit Lane
