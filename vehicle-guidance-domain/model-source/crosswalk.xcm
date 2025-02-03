@@ -34,7 +34,7 @@ class Crosswalk Approach
 attributes
     Crosswalk : Crosswalk ID {I, R77}
     Ego : Ego ID {R77}
-    Hold status : Hold Status// = .released
+    Hold status : Hold Status = .released
 --
 class Crosswalk Lane Traversal
 attributes
@@ -133,8 +133,8 @@ relationships
     terminates on inside, M Crosswalk Access
     terminates on outside, M Crosswalk Access
     1 Crosswalk
-    Crosswalk.(Inner access, Inner road segment) -> Crosswalk Access.(ID, Road segment)//.terminates on inside
-    Crosswalk.(Outer access, Outer road segment) -> Crosswalk Access.(ID, Road segment)//.terminates on outside
+    Crosswalk.(Inner access, Inner road segment) -> Crosswalk Access.(ID, Road segment).terminates on inside
+    Crosswalk.(Outer access, Outer road segment) -> Crosswalk Access.(ID, Road segment).terminates on outside
 
 --
     R72
