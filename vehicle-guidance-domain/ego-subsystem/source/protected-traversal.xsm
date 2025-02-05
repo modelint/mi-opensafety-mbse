@@ -1,0 +1,44 @@
+metadata
+    Title : Protected Traversal State Machine Diagram
+    Author : Leon Starr
+    Document ID : mint.guidance.ego.td.11a
+    /// Creation date : March 22, 2021
+    Modification date : Feburary 4, 2025
+    Version : 0.2.2
+    Organization : Model Integration, LLC / www.modelint.com
+    Copyright notice > MIT
+    Organization logo > mint
+domain Vehicle Guidance
+class Protected Connector Traversal
+events
+    Holding at exit crosswalk
+    Passed exit interface
+    EL closed
+--
+state PROCEEDING THROUGH THE INTERSECTION
+activity
+    // Ego Vehicle is inside the intersection
+    // traversing straight through or in a protected turn
+transitions
+    Holding at exit crosswalk > UNEXPECTED EXIT CROSSWALK HOLD
+    Passed exit interface > Traversal complete
+--
+state Traversal complete !*
+activity
+    Clear -> /R165/R163/Planned Movement
+--
+state UNEXPECTED EXIT CROSSWALK HOLD
+activity
+    // Illegal pedestrian transit or some other obstruction
+transitions
+    EL closed > INTRUDING AT EXIT CROSSWALKS
+    Passed exit interface > Traversal complete
+--
+state INTRUDING AT EXIT CROSSWALKS
+activity
+    exit_xwalks ..= /R165/R163/R155/Planned Crosswalk Traversal( Position : .exit )/Intersection Crosswalk
+    exit xwalk approaches ..= exit_xwalks/R72/R77/Crosswalk Approach
+    Intrude -> exit xwalk approaches
+transitions
+    Passed exit interface > Traversal complete
+--

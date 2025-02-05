@@ -1,0 +1,37 @@
+diagram state machine // Vehicle Guidance / Yielding Traversal v0.5.x
+notation xUML
+presentation default
+orientation landscape
+sheet A2
+color spearmint
+padding l100 b200
+frame Model Integration Diagram
+frame_presentation default
+nodes
+    Determine yielding action 25% 8,2-3
+    INTRUDING THROUGH ONCOMING TRAFFIC 6,1-2 >right
+    INSIDE OR UTURN TOWARD EXIT CROSSWALKS 4,3-4
+    ENCROACHED YIELDING TO TRAFFIC 6,6
+    INTRUDING AT EXIT CROSSWALKS 4,1-2
+    Traversal complete 2,2 >left
+    Check exit crosswalks 4,6
+    ENCROACHED PENDING EXIT CROSSWALKS 2,6
+connectors
+    -Create : t|Determine yielding action
+    -Intrude : b-2|Determine yielding action : t*|INTRUDING THROUGH ONCOMING TRAFFIC
+    -Start inward turn-2 : b*|Determine yielding action : t|INSIDE OR UTURN TOWARD EXIT CROSSWALKS
+    +Encroach.2 : r|Determine yielding action : t|ENCROACHED YIELDING TO TRAFFIC
+    -Holding at exit crosswalk : b|INTRUDING THROUGH ONCOMING TRAFFIC : t*|INTRUDING AT EXIT CROSSWALKS
+    +EL closed-2 : l*|ENCROACHED YIELDING TO TRAFFIC : r+1|INTRUDING THROUGH ONCOMING TRAFFIC
+    -Passed exit interface : b|INTRUDING AT EXIT CROSSWALKS : t*|Traversal complete
+    -Passed exit interface/2.3-2 : l|INTRUDING THROUGH ONCOMING TRAFFIC : l|Traversal complete : L1R-1
+    +Passed exit interface.2 : b-1|INSIDE OR UTURN TOWARD EXIT CROSSWALKS : r|Traversal complete
+    +No oncoming traffic : b|ENCROACHED YIELDING TO TRAFFIC : t*|Check exit crosswalks
+    +Oncoming traffic.2-1 : t-2|INSIDE OR UTURN TOWARD EXIT CROSSWALKS : r-2|INTRUDING THROUGH ONCOMING TRAFFIC
+    +Go through : l|Check exit crosswalks : r*|INSIDE OR UTURN TOWARD EXIT CROSSWALKS
+    +Remain encroached : b|Check exit crosswalks : t*|ENCROACHED PENDING EXIT CROSSWALKS
+    +EL closed.2 : l+1|ENCROACHED PENDING EXIT CROSSWALKS : b+2|INSIDE OR UTURN TOWARD EXIT CROSSWALKS
+    -Exit crosswalk holds released-2 : l-1|ENCROACHED PENDING EXIT CROSSWALKS : b|INSIDE OR UTURN TOWARD EXIT CROSSWALKS
+    +Oncoming traffic.3-1 : r|ENCROACHED PENDING EXIT CROSSWALKS : r|ENCROACHED YIELDING TO TRAFFIC : L7R-2
+    +Holding at exit crosswalk-2 : l|INSIDE OR UTURN TOWARD EXIT CROSSWALKS : r*|INTRUDING AT EXIT CROSSWALKS
+    b|Traversal complete

@@ -1,0 +1,109 @@
+metadata
+    Title : Yielding Traversal State Machine Diagram
+    Author : Leon Starr
+    Document ID : mint.guidance.ego.td.12a
+    /// Creation date : March 22, 2021
+    Modification date : February 4, 2025
+    Version : 0.5.0
+    Organization : Model Integration, LLC / www.modelint.com
+    Copyright notice > MIT
+    Organization logo > mint
+domain Vehicle Guidance
+class Yielding Traversal
+events
+    /// Creation
+    Create
+
+    /// Internal events
+    Intrude
+    Start inward turn
+    Encroach
+    Go through
+    Remain encroached
+
+    /// External events
+    Holding at exit crosswalk
+    Passed exit interface
+    EL closed
+    No oncoming traffic
+    Exit crosswalk holds released
+    Oncoming traffic
+--
+initial transitions
+    Create > Determine yielding action
+--
+state Determine yielding action
+activity
+    my EL .= /R165/R163/R161/R160/R63/MSAI Entrance Lane
+    // If the signal is not GO while we are edged out into the Intersection, we need to get moving!
+    not my EL.Open?  Intrude -> me : {
+        // Intersection signal is still GO
+        exit xwalk traversals ..= /R165/R163/R155/Planned Crosswalk Traversal( Position: .exit )
+        busy exit xwalks ..= exit xwalk traversals/R155/R72/R77/Crosswalk Approach(Hold status != .released )
+        oncoming traffic ..= /R165/R164/Oncoming Traffic Yield Requirement(Signal phase : .go)/R164/Cross Traffic Lane(Traffic)
+        oncoming traffic or busy exit crosswalks? Encroach -> : Start inward turn -> me
+    }
+transitions
+    Intrude > INTRUDING THROUGH ONCOMING TRAFFIC
+    Start inward turn > INSIDE OR UTURN TOWARD EXIT CROSSWALKS
+    Encroach > ENCROACHED YIELDING TO TRAFFIC
+--
+state INTRUDING THROUGH ONCOMING TRAFFIC
+activity
+    /R165/R163/R161/R65/Turn Movement.Turn direction? {
+        .inside:  DRIVING.Intrude at inside go encroach( /R165/Connector Traversal.Intersection )
+        .u_turn: DRIVING.Intrude at uturn encroach( /R165/Connector Traversal.Intersection )
+    }
+transitions
+    Holding at exit crosswalk > INTRUDING AT EXIT CROSSWALKS
+    Passed exit interface > Traversal complete
+--
+state INSIDE OR UTURN TOWARD EXIT CROSSWALKS
+activity
+    /R165/R163/R161/R65/Turn Movement.Direction? {
+        .inside: DRIVING.Release inside go encroach( /R165/Connector Traversal.Intersection )
+        .u_turn: DRIVING.Release uturn encroach( /R165/Connector Traversal.Intersection )
+    } // These are the only possibilities for this type of Connector Traversal
+transitions
+    Passed exit interface > Traversal complete
+    Holding at exit crosswalk > INTRUDING AT EXIT CROSSWALKS
+    Oncoming traffic > INTRUDING THROUGH ONCOMING TRAFFIC
+--
+state ENCROACHED YIELDING TO TRAFFIC
+activity
+    // In the Intersection, yielding to oncoming
+    // traffic and the exit xwalk (if any)
+transitions
+    EL closed > INTRUDING THROUGH ONCOMING TRAFFIC
+    No oncoming traffic > Check exit crosswalks
+--
+state INTRUDING AT EXIT CROSSWALKS
+activity
+    Intrude -> /R165/R163/R155/Planned Crosswalk Traversal(
+        Position: .exit )/R155/R72/R77/Crosswalk Approach
+transitions
+    Passed exit interface > Traversal complete
+--
+state Traversal complete !*
+activity
+    Clear -> /R165/R163/Planned Movement
+transitions
+--
+state Check exit crosswalks
+activity
+    exit xwalk traversals ..= /R165/R163/R155/Planned Crosswalk Traversal( Position: .exit )
+    busy exit xwalks ..= exit xwalk traversals/R155/R72/R77/Crosswalk Approach(Hold status != .released )
+    busy exit xwalks? Remain encroached -> : Go through -> me
+transitions
+    Go through > INSIDE OR UTURN TOWARD EXIT CROSSWALKS
+    Remain encroached > Remain encroached
+--
+state ENCROACHED PENDING EXIT CROSSWALKS
+activity
+    // In the Intersection, yielding to oncoming
+    // traffic and the exit xwalk(s)
+transitions
+    EL closed > INSIDE OR UTURN TOWARD EXIT CROSSWALKS
+    Exit crosswalk holds released > INSIDE OR UTURN TOWARD EXIT CROSSWALKS
+    Oncoming traffic > ENCROACHED YIELDING TO TRAFFIC
+--

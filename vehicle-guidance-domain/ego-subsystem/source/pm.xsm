@@ -1,0 +1,181 @@
+metadata
+    Title : Planned Movement State Machine Diagram
+    Author : Leon Starr
+    Document ID : mint.guidance.ego.td.14a
+    /// Creation date : March 28, 2021
+    Modification date : February 4, 2025
+    Version : 0.4.5
+    Organization : Model Integration, LLC / www.modelint.com
+    Copyright notice > MIT
+    Organization logo > mint
+domain Vehicle Guidance
+class Planned Movement
+events
+    /// Initial events
+    Prepare
+
+    /// External events
+    Follow
+    Approach changed
+    Passed entry crosswalk
+    EL closed
+    EV holding at entry crosswalk
+    Crosswalk hold released
+    Clear
+    Passed entry interface
+
+    /// Self directed events
+    Wait for EV
+    /// xx Monitoring traffic
+    Traversing
+
+    Intersection open
+    Approaching entry crosswalks
+    Multiple entry crosswalks
+    Traverse connector
+--
+initial transitions
+    Prepare > Prepare intersection traversal
+--
+state Prepare intersection traversal( lane change approach: Boolean )
+activity
+    // Create and then activate all Entry Crosswalks
+    entry xwalks ..= Crosswalk Lane Traversal(Inside division : EL inside division, Road Segment: EL road segment )/R70/R72/Intersection Crosswalk
+    *Planned Crosswalk Traversal( Position: .entry).Activate() &R155 me, entry xwalks
+
+    // Create and activate all Exit Crosswalks at the interface to the Exit Conduit
+    exit xwalks ..= /R161/R62/Exit Conduit Interface/R51/Driving Lane/R70/R72/Intersection Crosswalk
+    *Planned Crosswalk Traversal( Position: .exit).Activate() &R155 me, exit xwalks
+
+
+    // Set any encroach positions and signal the turn if any and Ego is in the target EL
+
+    turn .= /R161/R65/Turn Movement
+    turn?
+            not in.lane change approach? PANEL.Indicate( /R161/Movement.Indicate() )
+            turn.Direction? {
+                .outside: turn/R64/Turn After Stop Permitted? DRIVING.Hold at outside encroach( Intersection ); dir = Inside Outside::.outside // Explicit type declaration
+            .inside: {  // two encroaches possible if turning onto one-way street
+                DRIVING.Hold at inside go encroach( Intersection )
+                turn/R64/Turn After Stop Permitted? DRIVING.Hold at inside stop encroach( Intersection )
+             }
+            .uturn: DRIVING.Hold at uturn encroach( Intersection ); dir = Inside Outside::.inside  // Both .inside and .uturn directions are to the inside
+    }
+    Wait for EV -> me
+    Movement ready -> /R161/Entrance Lane Approach
+transitions
+    Wait for EV > WAITING FOR EV ARRIVAL
+--
+state WAITING FOR EV ARRIVAL
+activity
+    // Ego is approaching Connector, presumably
+    // from the correct EL
+transitions
+    Follow > Open the intersection
+    Approach changed > Abandoned
+    Passed entry interface > Inteface hold breached
+--
+state Open the intersection
+activity
+    DRIVING.Release hold before intersection interface( Intersection )
+    Intersection open -> me
+transitions
+    Intersection open > EV BEFORE ENTRY INTERFACE
+--
+state EV BEFORE ENTRY INTERFACE
+activity
+    // Is there a hold at any of our Entry Crosswalks?
+    entry xwalks ..= /R155/Planned Crosswalk Traversal(Position: .entry)
+    entry xwalks/R155/R72/R77/Crosswalk Approach( Hold )?
+               EV holding at entry crosswalk -> me
+transitions
+    EL closed > Reinitiate approach
+    EV holding at entry crosswalk > Reinitiate approach
+    Passed entry interface > Check for entry crosswalks
+--
+state Reinitiate approach
+activity
+    // EV attempting to follow again
+    Approach from interface -> /R161/Entrance Lane Approach
+    Wait for EV -> me
+transitions
+    Wait for EV > EV BEFORE ENTRY INTERFACE
+--
+state HOLDING AT ENTRY CROSSWALK
+activity
+    // The EV is waiting in front of the
+    // Interface until the entry xwalk is unoccupied
+transitions
+    Crosswalk hold released > Reinitiate approach
+--
+state Check for entry crosswalks
+activity
+    entry xwalks ..= /R155/Planned Crosswalk Traversal(Position: .entry)
+    entry xwalks? Approaching entry crosswalks -> : Traverse connector -> me
+transitions
+    Approaching entry crosswalks > TRAVERSING ENTRY CROSSWALKS
+    Traverse connector > Check connector type
+--
+state TRAVERSING ENTRY CROSSWALKS
+activity
+    // EV is passing through one or more entry crosswalks
+transitions
+    Passed entry crosswalk > Deactivate entry crosswalk
+--
+state Deactivate entry crosswalk( lane change approach: Boolean )
+activity
+    // We're past this Crosswalk so stop monitoring it
+    /R155/Planned Crosswalk Traversal(in.crosswalk).Deactivate()
+    more than one entry xwalk ..= /R155/Planned Crosswalk Traversal( Position: .entry, Crosswalk != in.crosswalk )
+    more than one entry xwalk? Multiple entry crosswalks -> : Traverse connector -> me
+transitions
+    Multiple entry crosswalks > TRAVERSING ENTRY CROSSWALKS
+    Traverse connector > Check connector type
+--
+state Check connector type
+activity
+    // Create the appropriate type of connector traversal and wait for it to complete
+    Traversing -> me
+
+    // Get my EL and my Turn Movement (if any) and connector
+    my EL .= /R161/R160/R63/MSAI Entrance Lane
+    turn .= /R161/R65/Turn Movement
+
+    // Turn after stop okay if its a turn movement and signal is not go and there is at least one yield requirement on the stop signal phase
+    turn after stop = ( turn and not my EL.Open and turn/R58/OTY Req(Signal phase: .stop) )
+    // Scrall note above: when and'ing, the first failure means that subsequent comparisons are not performed
+    // so if turn is false (empty set), there is no danger of an attempted traversal later in the clause
+    // Also note use of '=' instead of '.='  which assigns a scalar (true/false) rather than an empty/non-empty set
+    my connector = /R166/AI Lane Connector // Planned connector to traverse
+
+    turn after stop?
+        Create -> *Turn After Stop Traversal &R165 Connector Traversal &R163 me, my connector : {
+            no yield turn = turn and not turn/R58/Oncoming Traffic Yield Requirement( Signal: .go )
+            not turn or no yield turn? Create -> *Protected Connector Traversal & R165 Connector Traversal &R163 me, my connector :
+                Create -> *Yielding Connector Traversal & R165 Connector Traversal &R163 me, my connector
+        }
+transitions
+    Traversing > INSIDE THE INTERSECTION
+--
+state INSIDE THE INTERSECTION
+activity
+    // Traversing across the connector
+transitions
+    Clear > Clear
+--
+state Clear !*
+activity
+    Follow complete -> /R161/Entrance Lane Approach
+    /R163/R164/Cross Traffic Lane.Stop monitoring()
+    /R155/Planned Crosswalk Traversal ( Position: .exit ).Deactivate()
+--
+state Abandoned !*
+activity
+    DRIVING.Release intersection encroaches( Intersection )
+    Movement abandoned -> /R161/Entrance Lane Approach
+--
+state Interface hold breached !*
+activity
+    DRIVING.Interface hold breached( Intersection )
+    Movement abandoned -> /R161/Entrance Lane Approach
+--

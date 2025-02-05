@@ -1,0 +1,46 @@
+diagram state machine // Vehicle Guidance / Planned Movement layout
+notation xUML
+presentation default
+orientation landscape
+sheet A0
+color clover
+padding b100
+frame Model Integration Diagram
+frame_presentation default
+nodes
+    Prepare intersection traversal 24,5
+    WAITING FOR EV ARRIVAL 22,5
+    Abandoned 22,6
+    Interface hold breached 22,4 <error>
+    Open the intersection 20,5
+    EV BEFORE ENTRY INTERFACE 18,5
+    Reinitiate approach 18,3
+    HOLDING AT ENTRY CROSSWALK 17,4
+    Check for entry crosswalks 16,5
+    TRAVERSING ENTRY CROSSWALKS 14,5
+    Deactivate entry crosswalk 12,5
+    Check connector type 40% 10,5
+    INSIDE THE INTERSECTION 8,5
+    Clear 6,5
+connectors
+    +Prepare : t|Prepare intersection traversal
+    +Wait for EV : b|Prepare intersection traversal : t*|WAITING FOR EV ARRIVAL
+    +Follow : b|WAITING FOR EV ARRIVAL : t*|Open the intersection
+    +Approach changed : r|WAITING FOR EV ARRIVAL : l*|Abandoned
+    +Passed entry interface : l|WAITING FOR EV ARRIVAL : r*|Interface hold breached
+    +Intersection open : b|Open the intersection : t*|EV BEFORE ENTRY INTERFACE
+    +EL closed : l|EV BEFORE ENTRY INTERFACE : r*|Reinitiate approach
+    +Wait for EV.2 : t+2|Reinitiate approach : t-2|EV BEFORE ENTRY INTERFACE : L19R-1
+    -EV holding at entry crosswalk.2-2 : b-2|EV BEFORE ENTRY INTERFACE : r|HOLDING AT ENTRY CROSSWALK
+    -Crosswalk hold released-2 : l|HOLDING AT ENTRY CROSSWALK : b|Reinitiate approach
+    +Passed entry interface : b|EV BEFORE ENTRY INTERFACE : t*|Check for entry crosswalks
+    +Approaching entry crosswalks : b|Check for entry crosswalks : t*|TRAVERSING ENTRY CROSSWALKS
+    +Passed entry crosswalk : b|TRAVERSING ENTRY CROSSWALKS : t*|Deactivate entry crosswalk
+    +Multiple entry crosswalks.3-3 : l|Deactivate entry crosswalk : l|TRAVERSING ENTRY CROSSWALKS : L5R-3
+    +Traverse connector : b|Deactivate entry crosswalk : t*|Check connector type
+    +Traverse connector.2-2 : r|Check for entry crosswalks : t+2|Check connector type
+    +Traversing : b|Check connector type : t*|INSIDE THE INTERSECTION
+    +Clear : b|INSIDE THE INTERSECTION : t*|Clear
+    b|Clear
+    r|Abandoned
+    b|Interface hold breached

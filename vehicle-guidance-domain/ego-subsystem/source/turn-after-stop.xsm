@@ -1,0 +1,73 @@
+metadata
+    Title : Turn After Stop Connector Traversal State Machine Diagram
+    Author : Leon Starr
+    Document ID : mint.guidance.ego.td.13a
+    /// Creation date : March 22, 2021
+    Modification date : February 4, 2025
+    Version : 0.2.0
+    Organization : Model Integration, LLC / www.modelint.com
+    Copyright notice > MIT
+    Organization logo > mint
+domain Vehicle Guidance
+class Turn After Stop Connector Traversal
+events
+    Turn after stop
+    Monitoring cross traffic
+    Active cross traffic
+    Proceed past turn encroach
+    Holding at exit crosswalk
+    Lane clear
+    Passing crosswalk
+--
+initial transitions
+    Turn after stop > Create cross traffic lanes
+--
+state Create cross traffic lanes
+activity
+    // Create ctx lanes and begin monitoring them
+    stop oty reqs ..= /R165/R163/R161/R58/OTY Requirement( Signal phase : .stop )
+    ctx lanes ..= *Cross Traffic Lane &R164 stop oty reqs, /R165/Connector Traversal
+    ctx lanes.Monitor()
+    Monitoring cross traffic -> me
+transitions
+    Monitoring cross traffic > Check cross traffic
+--
+state Check cross traffic
+activity
+    not /R165/R164/Cross Traffic Lane( Traffic )?
+          Proceed to turn encroach  -> : Active cross traffic -> me
+transitions
+    Active cross traffic > YIELDING TO CROSS TRAFFIC
+    Proceed past turn encroach > TURNING AFTER STOP
+--
+state TURNING AFTER STOP
+activity
+    turn .= /R165/R163/R161/R65/Turn Movement
+    // There has to be one for me to exist
+    turn.Direction? {
+        .inside : DRIVING.Release inside encroach()
+        .outside : DRIVING.Release outside stop encroach()
+    }  // It must be one of these two since a uturn after stop is never legal
+transitions
+    Holding at exit crosswalk > YIELDING FOR EXIT CROSSWALK
+    Passing crosswalk > Traversal complete
+--
+state YIELDING TO CROSS TRAFFIC
+activity
+    // In the Intersection, yielding to oncoming traffic
+transitions
+    Lane clear > Check cross traffic
+--
+state YIELDING FOR EXIT CROSSWALK
+activity
+    // Blocking crosstraffic and waiting for exit xwalk to clear
+transitions
+    Passing crosswalk > Traversal complete
+--
+state Traversal complete !*
+activity
+    Clear -> /R165/R163/Planned Movement
+    // NOTE: Only works if there is only one exit crosswalk
+    // We need to add an ordering to crosswalk approaches
+    // in the next version
+--

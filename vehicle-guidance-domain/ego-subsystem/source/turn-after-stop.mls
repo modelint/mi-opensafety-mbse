@@ -1,0 +1,26 @@
+diagram state machine // Vehicle Guidance / Turn After Stop Connector Traversal
+notation xUML
+presentation default
+orientation landscape
+sheet A2
+color pink eraser
+padding l300 b250
+frame Model Integration Diagram
+frame_presentation default
+nodes
+    Create cross traffic lanes 9,1
+    Check cross traffic 50% 7,1
+    TURNING AFTER STOP 4,1
+    YIELDING TO CROSS TRAFFIC 7,3
+    YIELDING FOR EXIT CROSSWALK 3,3
+    Traversal complete 2,1
+connectors
+    b|Traversal complete
+    +Turn after stop : t|Create cross traffic lanes
+    +Monitoring cross traffic : b|Create cross traffic lanes : t*|Check cross traffic
+    +Active cross traffic-1 : r|Check cross traffic : l*|YIELDING TO CROSS TRAFFIC
+    -Lane clear.3 : b|YIELDING TO CROSS TRAFFIC : b+2|Check cross traffic : L6R-1
+    +Proceed past turn encroach-1 : b|Check cross traffic : t*|TURNING AFTER STOP
+    +Holding at exit crosswalk.2 : r|TURNING AFTER STOP : t|YIELDING FOR EXIT CROSSWALK
+    +Passing crosswalk : b|YIELDING FOR EXIT CROSSWALK : l|Traversal complete
+    +Passing crosswalk : b|TURNING AFTER STOP : t*|Traversal complete

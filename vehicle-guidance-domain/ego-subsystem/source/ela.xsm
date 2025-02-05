@@ -1,0 +1,177 @@
+metadata
+    Title : Entrance Lane Approach State Machine Diagram
+    Author : Leon Starr
+    Document ID : tri.guidance.ego.td.7a
+    /// Creation date : June 16, 2020
+    Modification date : Feburary 3, 2025
+    Version : 2.4.5
+    Organization : Model Integration, LLC / www.modelint.com
+    Copyright notice > MIT
+    Organization logo > mint
+domain Vehicle Guidance
+class Entrance Lane Approach
+events
+    /// Creation events
+    Approaching
+    /// External events
+    Movement ready
+    Assume stop
+    Assume go
+    Unsuccessful multi lane change
+    Movement abandoned
+    Commit stop
+    Commit go
+    EL open
+    Ego holding at interface
+    Successful multi lane change
+    Follow complete
+    Approach from interface
+
+    /// Self directed events
+    Initially stop
+    Initially go
+    Wait for EL to open
+    Lane change in progress
+    Proceed along
+    Turn okay after stop
+--
+initial transitions
+    Approaching > EGO VEHICLE PREPARATION
+--
+state EGO VEHICLE PREPARATION( exit road segment : Road Segment ID, exit lane inside division : Lane Division ID )
+activity
+    // Monitor the signal in the target Entrance Lane
+    /R160/R63/UMSAI Entrance Lane.Start watching()
+
+    // Select the target connector leading from our entrance to our exit lane through the intersection
+    target connector .= AIL Connector( EL road segment : Road segment, EL inside division : Target EL inside division,
+        XL road segment : in.exit road segment, XL inside division : in.exit lane inside division )
+
+    // Identify planned movement
+    target movement .= target connector/R67/Movement
+
+    // Set the lane change pending status if we are not currently in our target entrance lane
+    target el .= /R160/R61/R60/R53/Driving Lane  // Traversing through intersection to road subsystem
+    ego dl .= /R160/R151/Driving Lane
+    Lane change pending = (target el != ego dl)
+
+    // Create the Planned Movement for the current route assuming we get into this entrance lane and
+    // link it to the intended AIL Connector (exit lane on the other side of the Intersection)
+    Prepare( lane change approach : Lane change pending ) -> *Planned Movement &R161 me, target movement &R166 target connector
+
+    DRIVING.Hold before intersection interface( target movement.Intersection )
+
+    // If Ego is not in the target EL, request a lane change maneuver
+    turn signal = target movement.Indicate() // How to signal turn at end of maneuver, if turning
+    Lane change pending?
+        Get into lane *> Multi Lane Maneuver( Completion turn signal : turn signal ) &R157 target el, /R160/Active Driving Lane :
+        Panel.Indicate( turn signal )
+transitions
+    Movement ready > Monitor stop go
+--
+state Monitor stop go
+activity
+    // Start monitoring our motion for a stop/go decision in this EL
+    // Get an initial assumption in the process
+
+    // Select all potential exit lanes based on our Planned Movement
+    XLs ..= /R161/Movement/R67/R57/AIXL
+
+    assumption = MOTION.Monitor EL approach(
+        from EL: Target EL inside division, from RS: Road segment, to XLs: Xls )
+    assumption == .go? Initially go -> : Initially stop -> me
+transitions
+    Initially stop > APPROACHING ASSUMING STOP
+    Initially go > APPROACHING ASSUMING GO
+--
+state APPROACHING ASSUMING STOP
+activity
+    // Moving toward intersection assuming we will need to stop
+    DRIVING.Assume stopping at intersection()
+transitions
+    Assume go > APPROACHING ASSUMING GO
+    Unsuccessful multi lane change > ABANDONING THIS APPROACH
+    Commit stop > HOLDING BEHIND INTERFACE
+--
+state APPROACHING ASSUMING GO
+activity
+    // Moving toward intersection under assumption that we can pass through without stopping
+    DRIVING.Assume going through intersection()
+transitions
+    Assume stop > APPROACHING ASSUMING STOP
+    Unsuccessful multi lane change > ABANDONING THIS APPROACH
+    Commit go > Check for lane change in progress
+--
+state ABANDONING THIS APPROACH
+activity
+    Approach changed -> /R161/Planned Movement
+transitions
+    Movement abandoned > Create new approach
+--
+state Create new approach( intersection : Intersection ID ) !*
+activity
+    EL inside division = /R160/ADL.Current lane inside division  // Now approaching from current EL
+    target XL, target RS .= ROUTE.Reroute at intersection(
+        EL: EL inside division, intersection: /R161/Movement.Intersection )
+    MOTION.Stop monitoring EL approach( lane: Target EL inside division, Road segment )
+    /R160/R63/MSAI Entrance Lane.Stop watching()
+    Approaching() -> *Entrance Lane Approach &R160 /R160/Active Driving Lane,
+        SAI_EL( Inside division: EL inside division, Road segment )
+--
+state HOLDING BEHIND INTERFACE
+activity
+    // There is currently a hold at the interface, so we know
+    // that the EV cannot proceed past that point.
+    // But it can move up as far as it can without crossing it.
+transitions
+    Unsuccessful multi lane change > ABANDONING THIS APPROACH
+    EL open > Monitor stop go
+    Ego holding at interface > Turn after stop permitted
+--
+state Turn after stop permitted
+activity
+    // Check to see if turn okay after stop
+    turn_after_stop .= /R161/Planned Movement/R65/R64/Turn After Stop Permitted?
+        Turn okay after stop -> : Wait for EL to open -> me
+transitions
+    Wait for EL to open > HOLDING BEHIND INTERFACE
+    Turn okay after stop > Check for lane change in progress
+--
+state Check for lane change in progress
+activity
+    not Lane change pending?
+        Proceed along -> : Lane change in progress -> me
+transitions
+    Lane change in progress > LANE CHANGE COMPLETING
+    Proceed along > EXECUTING MOVEMENT
+--
+state LANE CHANGE COMPLETING
+activity
+    // Abort so we can deal with success or failure
+    active mlm .= /R160/R157/MLM
+
+    // If it was clearing out during our transition, no problem
+    // we just sit tight and wait for the imminent success/fail
+    // event. Otherwise, Abort!
+    active mlm? active mlm.Abort requested.set()
+transitions
+    Successful multi lane change > EXECUTING MOVEMENT
+    Unsuccessful multi lane change > ABANDONING THIS APPROACH
+--
+state EXECUTING MOVEMENT
+activity
+    Follow -> /R161/Planned Movement
+transitions
+    Follow complete > Cleared intersection
+    Approach from interface > Monitor stop go
+    Movement abandoned > Failed approach
+--
+state Cleared intersection !*
+activity
+    Turn in connector? PANEL.Indicate( direction : .cancel )
+    /R160/SAI Entrance Lane/R63/MSAI Entrance Lane.Stop watching()
+--
+state Failed approach( intersection : Intersection ID ) !*
+activity
+    // Log failed approach
+--

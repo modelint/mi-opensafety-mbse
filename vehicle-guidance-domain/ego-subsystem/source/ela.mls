@@ -1,0 +1,51 @@
+diagram state machine // Vehicle Guidance / Entrance Lane Approach
+notation xUML
+presentation default
+orientation landscape
+sheet A1
+color recycle bin
+padding b100
+frame Model Integration Diagram
+frame_presentation default
+nodes
+    EGO VEHICLE PREPARATION  14,7
+    Monitor stop go 12,7
+    APPROACHING ASSUMING STOP 10,8
+    APPROACHING ASSUMING GO 10,6
+    ABANDONING THIS APPROACH 7,7
+    Create new approach 5,7
+    HOLDING BEHIND INTERFACE 7,8
+    Turn after stop permitted 3,8
+    Check for lane change in progress 75% 8,6
+    LANE CHANGE COMPLETING 6,6
+    EXECUTING MOVEMENT [C2]50% 5,6 >bottom
+    Cleared intersection 2,6
+    Failed approach 5,4 >bottom <error>
+connectors
+    +Approaching : t|EGO VEHICLE PREPARATION
+    +Movement ready : b|EGO VEHICLE PREPARATION : t*|Monitor stop go
+    +Initially stop : r-2|Monitor stop go : t|APPROACHING ASSUMING STOP
+    +Initially go : l-2|Monitor stop go : t|APPROACHING ASSUMING GO
+    +Assume stop : r+2|APPROACHING ASSUMING GO : l*|APPROACHING ASSUMING STOP
+    +Assume go : l|APPROACHING ASSUMING STOP : r*|APPROACHING ASSUMING GO
+    +Commit stop : b|APPROACHING ASSUMING STOP : t*|HOLDING BEHIND INTERFACE
+    +EL open.3 : r|HOLDING BEHIND INTERFACE : r|Monitor stop go : L9R-2
+    +Ego holding at interface : b+2|HOLDING BEHIND INTERFACE : t*|Turn after stop permitted
+    +Unsuccessful multi lane change/2-1 : l|HOLDING BEHIND INTERFACE : r*|ABANDONING THIS APPROACH
+    -Wait for EL to open : t-1|Turn after stop permitted : b*|HOLDING BEHIND INTERFACE
+    +Turn okay after stop : l|Turn after stop permitted : b+2|Check for lane change in progress
+    -Unsuccessful multi lane change/2.2 : r-2|APPROACHING ASSUMING GO : t-2|ABANDONING THIS APPROACH
+    +Unsuccessful multi lane change/2.2 : l-2|APPROACHING ASSUMING STOP : t+2|ABANDONING THIS APPROACH
+    +Movement abandoned : b|ABANDONING THIS APPROACH : t*|Create new approach
+    -Commit go : b|APPROACHING ASSUMING GO : t*|Check for lane change in progress
+    +Lane change in progress/2 : b|Check for lane change in progress : t*|LANE CHANGE COMPLETING
+    +Successful multi lane change/2 : b|LANE CHANGE COMPLETING : t*|EXECUTING MOVEMENT
+    +Unsuccessful multi lane change/2 : r|LANE CHANGE COMPLETING : l|ABANDONING THIS APPROACH : L7R-2
+    +Follow complete : b|EXECUTING MOVEMENT : t*|Cleared intersection
+    +Approach from interface.3 : l|EXECUTING MOVEMENT : l|Monitor stop go : L5
+    -Movement abandoned/2-1 : l-2|EXECUTING MOVEMENT : r*|Failed approach
+    +Proceed along+2 : b-2|Check for lane change in progress : l+2|EXECUTING MOVEMENT
+    b|Create new approach
+    b|Cleared intersection
+    b|Failed approach
+    +Approaching : t|EGO VEHICLE PREPARATION

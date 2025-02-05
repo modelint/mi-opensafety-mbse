@@ -12,13 +12,16 @@ XCM_FILES := $(wildcard $(addsuffix /*.xcm, $(MODEL_SRC_DIRS)))
 XSM_FILES := $(wildcard $(addsuffix /*.xsm, $(MODEL_SRC_DIRS)))
 MLS_FILES := $(wildcard $(addsuffix /*.mls, $(MODEL_SRC_DIRS)))
 
-# Filter .mls files
+# Filter .mls files for processing
 MLS_XCM_FILES := $(filter %_Starr.mls %_xUML.mls, $(MLS_FILES))
 MLS_XSM_FILES := $(filter-out %_Starr.mls %_xUML.mls, $(MLS_FILES))
 
-# Derive PDF output paths (replace "/source/" with "/")
-PDF_XCM_FILES := $(MLS_XCM_FILES:$(TOP_DIR)/vehicle-guidance-domain/%_Starr.mls=$(TOP_DIR)/vehicle-guidance-domain/%.pdf)
-PDF_XSM_FILES := $(MLS_XSM_FILES:$(TOP_DIR)/vehicle-guidance-domain/%.mls=$(TOP_DIR)/vehicle-guidance-domain/%.pdf)
+# Generate correct PDF output paths (convert /source/ → / and .mls → .pdf)
+PDF_XCM_FILES := $(subst /source/,/,$(MLS_XCM_FILES:%.mls=%.pdf))
+PDF_XSM_FILES := $(subst /source/,/,$(MLS_XSM_FILES:%.mls=%.pdf))
+
+# Extract the directories where PDFs will be stored
+PDF_DIRS := $(sort $(dir $(PDF_XCM_FILES) $(PDF_XSM_FILES)))
 
 # Debugging output
 debug:
@@ -30,39 +33,42 @@ debug:
 	@echo "MLS_XSM_FILES: $(MLS_XSM_FILES)"
 	@echo "PDF_XCM_FILES: $(PDF_XCM_FILES)"
 	@echo "PDF_XSM_FILES: $(PDF_XSM_FILES)"
+	@echo "PDF_DIRS: $(PDF_DIRS)"
 
-# The default target
-all: debug $(PDF_XCM_FILES) $(PDF_XSM_FILES)
+# Force execution of all rules
+.PHONY: all clean debug
+all: $(PDF_XCM_FILES) $(PDF_XSM_FILES)
 
-# Rule to generate PDFs from .mls and .xcm (for _Starr and _xUML files)
-$(TOP_DIR)/vehicle-guidance-domain/%.pdf: $(TOP_DIR)/vehicle-guidance-domain/%_Starr.mls $(TOP_DIR)/vehicle-guidance-domain/%_xUML.mls | $(@D)
-	@echo "Processing: $<"
-	@PREFIX=$$(basename $* | sed -E 's/(_Starr|_xUML)//'); \
-	XCM_FILE=$(@D)/source/$${PREFIX}.xcm; \
+# Ensure all directories exist before generating PDFs
+$(PDF_DIRS):
+	mkdir -p $@
+
+# Rule to generate PDFs from .mls and .xcm (_Starr.mls → _Starr.pdf)
+vehicle-guidance-domain/%_Starr.pdf: vehicle-guidance-domain/%/source/%_Starr.mls | $(PDF_DIRS)
+	@echo "Processing _Starr: $<"
+	@PREFIX=$$(basename $* | sed -E 's/_Starr//'); \
+	XCM_FILE=vehicle-guidance-domain/$*/source/$${PREFIX}.xcm; \
 	echo "Using XCM_FILE: $$XCM_FILE"; \
 	echo "Generating PDF from XCM: $@"; \
-	if [ -f $$XCM_FILE ]; then \
-		flatland -m $$XCM_FILE -l $< -d $@; \
-	else \
-		echo "ERROR: No matching .xcm file for $<" >&2; \
-	fi
+	flatland -m $$XCM_FILE -l $< -d $@
+
+# Rule to generate PDFs from .mls and .xcm (_xUML.mls → _xUML.pdf)
+vehicle-guidance-domain/%_xUML.pdf: vehicle-guidance-domain/%/source/%_xUML.mls | $(PDF_DIRS)
+	@echo "Processing _xUML: $<"
+	@PREFIX=$$(basename $* | sed -E 's/_xUML//'); \
+	XCM_FILE=vehicle-guidance-domain/$*/source/$${PREFIX}.xcm; \
+	echo "Using XCM_FILE: $$XCM_FILE"; \
+	echo "Generating PDF from XCM: $@"; \
+	flatland -m $$XCM_FILE -l $< -d $@
 
 # Rule to generate PDFs from .mls and .xsm (for non-_Starr/_xUML files only)
-$(TOP_DIR)/vehicle-guidance-domain/%.pdf: $(TOP_DIR)/vehicle-guidance-domain/%.mls | $(@D)
-	@echo "Processing: $<"
+vehicle-guidance-domain/%.pdf: vehicle-guidance-domain/%/source/%.mls | $(PDF_DIRS)
+	@echo "Processing XSM: $<"
 	@PREFIX=$$(basename $*); \
-	XSM_FILE=$(@D)/source/$${PREFIX}.xsm; \
+	XSM_FILE=vehicle-guidance-domain/$*/source/$${PREFIX}.xsm; \
 	echo "Using XSM_FILE: $$XSM_FILE"; \
 	echo "Generating PDF from XSM: $@"; \
-	if [ -f $$XSM_FILE ]; then \
-		flatland -m $$XSM_FILE -l $< -d $@; \
-	else \
-		echo "ERROR: No matching .xsm file for $<" >&2; \
-	fi
-
-# Ensure output directory exists
-$(TOP_DIR)/vehicle-guidance-domain/%:
-	mkdir -p $@
+	flatland -m $$XSM_FILE -l $< -d $@
 
 # Clean generated PDFs
 clean:

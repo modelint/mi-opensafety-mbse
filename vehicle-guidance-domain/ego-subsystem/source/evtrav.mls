@@ -1,0 +1,23 @@
+// Traveling Ego Vehicle state machine layout
+diagram state machine
+notation xUML
+presentation default
+orientation landscape
+sheet A3
+color clover
+padding b100
+frame Model Integration Diagram
+frame_presentation default
+nodes
+    Starting travel 9,4
+    REACT MODE 6,4
+    CRUISE MODE 3,4
+    Ending travel 6,6
+connectors
+    +Entered driving lane/2 : t|Starting travel
+    +React : b|Starting travel : t*|REACT MODE
+    +Exited driving lane-1 : r|REACT MODE : l*|Ending travel
+    -Cruise : b-2|REACT MODE : t*|CRUISE MODE
+    +React : t*|CRUISE MODE : b+2|REACT MODE
+    -Cruise.2-2 : l|Starting travel : l|CRUISE MODE : L3R+1
+    b|Ending travel

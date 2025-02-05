@@ -1,0 +1,22 @@
+diagram state machine // Vehicle Guidance / Protected Connector Traversal
+notation xUML
+presentation default
+orientation landscape
+sheet A3
+color clover
+padding l100 b170
+frame Model Integration Diagram
+frame_presentation default
+nodes
+    PROCEEDING THROUGH THE INTERSECTION 6,1
+    Traversal complete 2,1
+    UNEXPECTED EXIT CROSSWALK HOLD 4,3
+    INTRUDING AT EXIT CROSSWALKS 2,3
+connectors
+    -Create : t|PROCEEDING THROUGH THE INTERSECTION
+    +Holding at exit crosswalk : r|PROCEEDING THROUGH THE INTERSECTION : t|UNEXPECTED EXIT CROSSWALK HOLD
+    -Passed exit interface-2 : b|PROCEEDING THROUGH THE INTERSECTION : t*|Traversal complete
+    +Passed exit interface : l|UNEXPECTED EXIT CROSSWALK HOLD : t+1|Traversal complete
+    -Passed exit interface : l|INTRUDING AT EXIT CROSSWALKS : r*|Traversal complete
+    +EL closed : b|UNEXPECTED EXIT CROSSWALK HOLD : t*|INTRUDING AT EXIT CROSSWALKS
+    b|Traversal complete

@@ -1,0 +1,48 @@
+metadata
+    Title : Traveling Ego Vehicle State Machine Diagram
+    Author : Leon Starr
+    Document ID : mint.guidance.ego.td.23a
+    /// Creation date : November 17, 2021
+    Modification date : November 17, 2021
+    Version : 0.1.0
+    Organization : Model Integration, LLC / www.modelint.com
+    Copyright notice > MIT
+    Organization logo > mint
+domain Vehicle Guidance
+class Traveling Ego Vehicle
+events
+    Entered driving lane
+    React
+    Cruise
+    Exited driving lane
+--
+initial transitions
+    Entered driving lane > Starting travel
+--
+state Starting travel
+activity
+    // Vehicle begins traveling in a Driving Lane
+transitions
+    React > REACT MODE
+    Cruise > CRUISE MODE
+--
+state REACT MODE
+activity
+    // Impeded by vehicle or pedestrian traffic
+    // or monitoring a potential impediment
+    // or reacting to the environment or some incident in progress
+transitions
+    Cruise > CRUISE MODE
+    Exited driving lane > Ending travel
+--
+state CRUISE MODE
+activity
+    // Unimpeded by any vehicle or pedestrian traffic
+    // Not monitoring any potential impediment or reacting
+transitions
+    React > REACT MODE
+--
+state Ending travel !*
+activity
+    // No longer traveling in a Driving Lane
+--
