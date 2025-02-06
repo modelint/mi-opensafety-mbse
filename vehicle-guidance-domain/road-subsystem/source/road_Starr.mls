@@ -4,7 +4,7 @@ presentation default
 orientation landscape
 color peach
 sheet A0
-padding l200 b100
+padding l30 b120
 frame Model Integration Diagram
 frame_presentation default
 nodes

@@ -7,7 +7,7 @@ metadata
     Modification date : February 2, 2025
     Organization : Model Integration, LLC / www.modelint.com
     Copyright notice > MIT
-    Organization logo > mint
+    Organization logo > mint_tri
 domain Vehical Guidance, VG
 subsystem Lane Reconfiguration, LANE 200-250
 class Conduit <import:Road>

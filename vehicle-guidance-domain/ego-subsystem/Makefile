@@ -3,7 +3,8 @@ SRC_DIR := source
 OUT_DIR := .
 
 # Target PDFs
-PDF_FILES := ego_Starr.pdf ego_xUML.pdf dlc.pdf ela.pdf mlm.pdf
+PDF_FILES := ego_Starr.pdf ego_xUML.pdf dlc.pdf ela.pdf mlm.pdf evtrav.pdf pm.pdf \
+				protected-traversal.pdf turn-after-stop.pdf yielding-traversal.pdf
 
 # Default target (build all PDFs)
 all: $(PDF_FILES)

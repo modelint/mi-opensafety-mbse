@@ -6,7 +6,7 @@ metadata
     Version : 5.3.1
     Organization : Model Integration, LLC / www.modelint.com
     Copyright notice > MIT
-    Organization logo > mint
+    Organization logo > mint_tri
 domain Vehicle Guidance
 class Driving Lane Change
 events
